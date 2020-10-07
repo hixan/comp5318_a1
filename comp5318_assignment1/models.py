@@ -1,7 +1,9 @@
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier as KNN
+from collections import defaultdict
+#from sklearn.neighbors import KNeighborsClassifier as KNN
+#from sklearn.naive_bayes import GaussianNB as GNB_SKL
 from sklearn.decomposition import NMF
-from operator import itemgetter
+from my_tools.tools import loudmethod
 
 class TrivialModel:
 
@@ -13,6 +15,9 @@ class TrivialModel:
 
     def predict(self, x):
         return [self.rv]*len(x)
+
+    def __str__(self):
+        return f'TrivialModel({self.rv})'
 
 class GNB:
 
@@ -80,6 +85,52 @@ class GNB:
     def __str__(self):
         return f'GNB({self.sigma_adjust})'
 
+def cpdiff(x, y):
+    '''cartesian product difference between x, y.
+
+    Calculates cartesian product difference between all values of x and all values of y
+
+    Output is of the form:
+    x[i] - y[j] = result[i, j]
+    '''
+    return x[:, None, :] - y[None, :, :]
 
 
+class KNN:
+    def __init__(self, k=3, distancefunction='euclidian'):
+        self.k = k
+        self.distfn = {
+            'euclidian': lambda x, y: np.linalg.norm(cpdiff(x, y), axis=2),
+            'manhatten': lambda x, y:np.sum(cpdiff(x, y), axis=2)
+        }[distancefunction]
+        self._name = f'{type(self).__name__}(k={k}, distancefunction={distancefunction})'
+
+    def fit(self, x, y):
+        self.x = x
+        self.y = y
+
+    def predict(self, x):
+        print(x.shape)
+        dists = self.distfn(x, self.x)
+        idxs = np.argpartition(dists, self.k)[:,:self.k]
+        print(idxs.shape)
+        rv = np_mode(self.y[idxs], axis=0)
+        print(rv.shape)
+        return rv
+
+    def __str__(self):
+        return self._name
+
+
+def np_mode(ndarray, axis=None):
+
+    if axis is not None:
+        try:
+            axis = tuple(set(range(len(ndarray.shape))) - set(axis))
+        except TypeError:
+            return np_mode(ndarray, axis=(axis,))
+    options = np.array([np.sum(ndarray == i, axis=axis)
+        for i in range(np.max((ndarray)))
+        ])
+    return np.argmax(options, axis=0)
 

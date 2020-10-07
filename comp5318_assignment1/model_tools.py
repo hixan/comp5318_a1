@@ -3,7 +3,9 @@ import numpy as np
 from typing import List, Tuple
 import h5py
 import seaborn as sns
-from .models import GNB, KNN, NMF
+
+# TODO this should be implemented here
+from sklearn.pipeline import Pipeline
 
 
 class CrossValidateClassification:
@@ -76,6 +78,7 @@ class CrossValidateClassification:
         """
         # TODO this must be implemented from scratch
         from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
+
         if predicted is None:  # attempt to unpack
             true, predicted = true
 
@@ -132,36 +135,38 @@ class ModelRunner:
         with h5py.File('./data/Input/train/labels_training.h5','r') as H:
             self.ytr = np.copy(H['labeltrain'])
 
-        with h5py.File('./data/Input/test/images_testing.h5', 'r') as H:
-            self.xte = np.copy(H['datatest'])
-
         with h5py.File('./data/Input/test/labels_testing_2000.h5', 'r') as H:
             self.yte = np.copy(H['labeltest'])
 
-    def run(self, folds=10, verbose=False):
+        with h5py.File('./data/Input/test/images_testing.h5', 'r') as H:
+            self.xte = np.copy(H['datatest'])[:len(self.yte)]
+
+    def run_cv(self, folds=10, verbose=False):
         self.load_data()
         validator = CrossValidateClassification(self.xtr, self.ytr, n=folds, verbose=verbose)
         results = {}
         for model in self.models:
             if verbose:
-                print(f'running {model.__name__}')
+                print(f'running {model}')
             true, pred = validator.run_validation(model)
-            results[model.__name__] = CrossValidateClassification.aggregate_metrics(true, pred)
+            results[str(model)] = CrossValidateClassification.aggregate_metrics(true, pred)
         return results
 
+    def run(self, n=None, verbose=False):
+        self.load_data()
+        results = {}
+        try:
+            if n is None:
+                n = len(self.xte)
+        except ValueError:
+            raise ValueError('could not interperate input')
+        for model in self.models:
+            if verbose:
+                print(f'running {model}')
+            model.fit(self.xtr, self.ytr)
+            results[str(model)] = CrossValidateClassification.metrics(
+                    self.yte[:n], model.predict(self.xte[:n])
+            )
+        return results
 
-
-# TODO this should be implemented here
-from sklearn.pipeline import Pipeline
-
-if __name__ == '__main__':
-
-    knn = Pipeline([
-        ('nmf', NMF()),
-        ('knn', KNN())
-        ])
-
-    m = ModelRunner(GNB, knn)
-    print(m.validate(knn))
-    #print(m.run(folds=2, verbose=True))
 
