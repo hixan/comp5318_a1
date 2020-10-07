@@ -1,9 +1,8 @@
 import numpy as np
-from collections import defaultdict
-#from sklearn.neighbors import KNeighborsClassifier as KNN
-#from sklearn.naive_bayes import GaussianNB as GNB_SKL
+from itertools import count
+
+# TODO implement this and include it in a model with KNN - should speed it up by a lot
 from sklearn.decomposition import NMF
-from my_tools.tools import loudmethod
 
 class TrivialModel:
 
@@ -109,28 +108,55 @@ class KNN:
         self.x = x
         self.y = y
 
-    def predict(self, x):
-        print(x.shape)
-        dists = self.distfn(x, self.x)
-        idxs = np.argpartition(dists, self.k)[:,:self.k]
-        print(idxs.shape)
-        rv = np_mode(self.y[idxs], axis=0)
-        print(rv.shape)
-        return rv
+    def predict(self, x, batchsize=30):
+        res = []
+        for batch in breakup(x, batchsize):
+
+            dists = self.distfn(batch, self.x)
+            idxs = np.argpartition(dists, self.k)[:,:self.k]
+            res.append(np_mode(self.y[idxs], axis=(1,)))
+        return np.concatenate(res)
 
     def __str__(self):
         return self._name
 
+def np_mode(a, axis=None):
+    """np_mode - numpy.mode implementation (it is not in base numpy).
 
-def np_mode(ndarray, axis=None):
+    Works in the same way as np.mean, but returns the mode instead.
 
+    :param ndarray: array to perform mode on
+    :param axis: axis (or axes) over which to perform the mode.
+    :return: ndarray of modes
+
+    if a.shape == (w, x, y, z) and axis == (1, 2), then the returned value
+    will have the shape (w, z).
+    """
     if axis is not None:
         try:
-            axis = tuple(set(range(len(ndarray.shape))) - set(axis))
+            #axis = tuple(set(range(len(a.shape))) - set(axis))
+            axis = tuple(axis)
         except TypeError:
-            return np_mode(ndarray, axis=(axis,))
-    options = np.array([np.sum(ndarray == i, axis=axis)
-        for i in range(np.max((ndarray)))
+            return np_mode(a, axis=(axis,))
+    options = np.array([np.sum(a == i, axis=axis)
+        for i in range(np.max((a)))
         ])
     return np.argmax(options, axis=0)
+
+def breakup(itr, batchsize):
+    """break up an iterable into more managable batches
+
+    :param itr: iterable to break up
+    :param batchsize: size of batch to break up into
+
+    This will generate batches (of length batchsize) of iterable.
+    """
+    for batch in count():
+        batch *= batchsize
+        n = batch + batchsize
+        if n < len(itr):
+            yield itr[batch:n]
+        else:
+            break
+    yield itr[batch:]
 

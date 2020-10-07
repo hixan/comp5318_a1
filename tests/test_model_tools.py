@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import testing
-from comp5318_assignment1.models import TrivialModel, NMF, KNN, GNB, np_mode
+from comp5318_assignment1.models import TrivialModel, NMF, KNN, GNB, np_mode, breakup
 from comp5318_assignment1.model_tools import Pipeline, ModelRunner
 import pytest
 
@@ -69,10 +69,12 @@ def test_GNB():
     assert np.all(preds == y)
 
 def test_run_data():
+    if not show_results:
+        return
     mr = ModelRunner(KNN(8))
-    for m, v in mr.run().items():
+    for m, v in mr.run(n=30).items():
         print(f'{m: >20} : {v[0]}')
-    assert not show_results, 'Failing so the results get printed'
+    assert 0, 'failing to show results'
 
 def test_mode():
     x = np.array([[[ 0,  2,  2],
@@ -86,7 +88,11 @@ def test_mode():
                    [21, 22, 23],
                    [ 2, 25, 26],
                    [27, 28, 29]]])
-    y = np.array([[[ 0,  2,  2],
+    assert np_mode(x) == 2
+
+    assert np.all(np_mode(x, axis=(1,2)) == np.ones(2) * 2)
+
+    x = np.array([[[ 0,  2,  2],
                    [ 3,  4,  5],
                    [ 6,  7,  2],
                    [ 9, 10, 11],
@@ -103,16 +109,34 @@ def test_mode():
                    [21, 22, 23],
                    [ 2, 25, 26],
                    [27, 28, 29]]])
-    assert np_mode(x) == 2
 
-    assert np.all(np_mode(x, axis=0) == np.ones(2) * 2)
-
-    assert np.all(np_mode(y, axis=(1, 2)) == np.array(
+    assert np.all(np_mode(x, axis=0) == np.array(
                   [[ 0,  2,  2],
                    [ 3,  4,  5],
                    [ 6,  7,  2],
                    [ 9, 10, 11],
                    [12, 13, 14]]))
+
+    x = np.random.randint(0, 500, (50, 51, 52, 53))
+    assert np_mode(x, axis=0).shape == np.mean(x, axis=0).shape
+
+def test_breakup():
+    x = list(range(30))
+    exp = list(map(list, (
+        range( 0,  4),
+        range( 4,  8),
+        range( 8, 12),
+        range(12, 16),
+        range(16, 20),
+        range(20, 24),
+        range(24, 28),
+        range(28, 30)
+    )))
+
+    for i, j in zip(breakup(x, 4), exp):
+        assert i == j
+            
+
 
 
 # def test_GNB_SKL():
