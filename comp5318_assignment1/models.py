@@ -59,9 +59,9 @@ class GNB:
 
         # the above are now in the same shapes, meaning that *, +, -, /, **
         # all operate element-wise in a predictable way
-        assert xt.shape == (n, k, c), f'{xt.shape} =/= {(n, k, c)}'
-        assert mut.shape == (n, k, c), f'{mut.shape} =/= {(n, k, c)}'
-        assert sigmat.shape == (n, k, c), f'{sigmat.shape} =/= {(n, k, c)}'
+        #>>> assert xt.shape == (n, k, c), f'{xt.shape} =/= {(n, k, c)}'
+        #>>> assert mut.shape == (n, k, c), f'{mut.shape} =/= {(n, k, c)}'
+        #>>> assert sigmat.shape == (n, k, c), f'{sigmat.shape} =/= {(n, k, c)}'
 
         inexp = -(xt - mut)**2 / (2 * sigmat ** 2)
         num = np.exp(inexp)
