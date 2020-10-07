@@ -16,34 +16,70 @@ class TrivialModel:
 
 class GNB:
 
+    def __init__(self, sigma_adjust=1e-4):
+        self.sigma_adjust = sigma_adjust
+
     def fit(self, x, y):
-        levels = set(y)
-        self.dists = {}
-        self.pclasses = {}
-        for level in levels:
+        self.levels = sorted(list(set(y)))
+        self.means = []
+        self.sds = []
+        self.pclasses = []
+        for i, level in enumerate(sorted(self.levels)):
             xcat = x[y==level]
-            self.dists[level] = dict(mu=xcat.mean(axis=0), sigma=xcat.std(axis=0))
-            self.pclasses[level] = len(xcat) / len(x)
+            self.means.append(np.mean(xcat, axis=0))
+            self.sds.append(np.std(xcat, axis=0))
+            self.pclasses.append(len(xcat) / len(x))
+        self.means = np.array(self.means)
+        self.sds = np.array(self.sds)
+        self.pclasses = np.array(self.pclasses)
 
     def norm_cdf(self, x, mu, sigma):
         """norm_cdf.
 
-        :param x: ndarray (n by nclasses) data
-        :param mu: ndarray (nclasses) means of each features
-        :param sigma: ndarray (nclasses) sd of each feature
-        :return: ndarray (n by nclasses) probability of each feature being that value
+        :param x: ndarray (n by k) data
+        :param mu: ndarray (k by c) means of each feature for each class
+        :param sigma: ndarray (k by c) sd of each feature for each class
+        :return: ndarray (n by k by c) probability contribution of each feature being that value.
         """
-        rv = np.exp(-(x-mu)**2 / 2 / sigma ** 2) / np.sqrt(2 * np.pi * sigma ** 2)
-        return rv
 
-    def p_conditional(self, x, c):
-        rv = self.norm_cdf(x, **self.dists[c])
+        n, k = x.shape
+        c = mu.shape[1]
+
+        # sanity checks
+        assert mu.shape[0] == k
+        assert mu.shape == sigma.shape
+
+        xt = np.transpose(np.tile(x, (c,1,1)), (1, 2, 0))
+        mut = np.tile(mu, (n, 1, 1))
+        sigmat = np.tile(sigma, (n, 1, 1)) + self.sigma_adjust
+
+        # the above are now in the same shapes, meaning that *, +, -, /, **
+        # all operate element-wise in a predictable way
+        assert xt.shape == (n, k, c), f'{xt.shape} =/= {(n, k, c)}'
+        assert mut.shape == (n, k, c), f'{mut.shape} =/= {(n, k, c)}'
+        assert sigmat.shape == (n, k, c), f'{sigmat.shape} =/= {(n, k, c)}'
+
+        inexp = -(xt - mut)**2 / (2 * sigmat ** 2)
+        num = np.exp(inexp)
+        den = np.sqrt(2 * np.pi * sigmat**2)
+
+        rv =  num / den
+        # sigmat can sometimes be 0 with homogenous features (features that
+        # contribute nothing) This means that p(ci | xi) = 0 as xi xc for all ci.
         return rv
 
     def predict(self, x):
-        classes = np.array(list(self.pclasses.keys()))
-        probs = np.log(np.array([self.p_conditional(x, c) * self.pclasses[c] for c in classes])).sum(axis=2)
-        return classes[np.argmax(probs, axis=0)]
+        # tile and make of the form (n x k x c)
+        ind_probs = self.norm_cdf(x, self.means.T, self.sds.T)
+        conditionalprobs = np.sum(np.log(ind_probs), axis=1)
+
+        # pclasses has shape (c,), so it is repeated for each row in conditionalprobs * pclasses
+
+        return np.argmax(conditionalprobs + np.log(self.pclasses), axis=1)
+
+    def __str__(self):
+        return f'GNB({self.sigma_adjust})'
+
 
 
 
