@@ -1,9 +1,6 @@
 import numpy as np
 from itertools import count
 
-# TODO implement this and include it in a model with KNN - should speed it up by a lot
-from sklearn.decomposition import NMF
-
 class TrivialModel:
 
     def __init__(self, rv=0):
@@ -18,7 +15,8 @@ class TrivialModel:
     def __str__(self):
         return f'TrivialModel({self.rv})'
 
-class GNB:
+
+class GNB(TrivialModel):
 
     def __init__(self, sigma_adjust=1e-4):
         self.sigma_adjust = sigma_adjust
@@ -120,6 +118,7 @@ class KNN:
     def __str__(self):
         return self._name
 
+
 def np_mode(a, axis=None):
     """np_mode - numpy.mode implementation (it is not in base numpy).
 
@@ -142,6 +141,7 @@ def np_mode(a, axis=None):
         for i in range(np.max((a)))
         ])
     return np.argmax(options, axis=0)
+
 
 def breakup(itr, batchsize):
     """break up an iterable into more managable batches
