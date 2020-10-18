@@ -126,6 +126,7 @@ class ModelRunner:
         self.models = models
 
     def load_data(self):
+        """ loads the datasets provided for this assignment """
         if hasattr(self, 'xtr'):
             return  # has already been run
 
@@ -142,6 +143,7 @@ class ModelRunner:
             self.xte = np.copy(H['datatest'])[:len(self.yte)]
 
     def run_cv(self, folds=10, verbose=False):
+        """ runs n-fold cross validation on the model """
         self.load_data()
         validator = CrossValidateClassification(self.xtr, self.ytr, n=folds, verbose=verbose)
         results = {}
@@ -153,6 +155,11 @@ class ModelRunner:
         return results
 
     def run(self, n=None, verbose=False):
+        """run all models and evaluate performance
+
+        :param n: subset of test samples to evaluate model on.
+        :param verbose: if true, print progress.
+        """
         self.load_data()
         results = {}
         try:
