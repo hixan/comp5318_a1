@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import testing
 from comp5318_assignment1.models import TrivialModel, KNN, GNB, np_mode, breakup
-from comp5318_assignment1.decomposition import PCA, NMF
+from comp5318_assignment1.decomposition import PCA, NMF, IdentityTransformation
 from comp5318_assignment1.model_tools import Pipeline, ModelRunner
 import pytest
 
@@ -160,3 +160,13 @@ def test_pca():
         pca = PCA(components = 5)
     pca.fit(np.random.rand(20, 35))
     assert pca.transform(np.random.rand(200, 35)).shape == (200, 5)
+
+def test_pipeline():
+    def tuplestr(f):
+        return str(f), f
+
+    plne = Pipeline([
+        tuplestr(IdentityTransformation()),
+        tuplestr(TrivialModel(2))
+    ])
+    plne.fit(np.random.rand(30, 18), np.random.randint(0, 9, 18))

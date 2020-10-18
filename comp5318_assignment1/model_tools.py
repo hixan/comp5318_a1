@@ -4,8 +4,35 @@ from typing import List, Tuple
 import h5py
 import seaborn as sns
 
-# TODO this should be implemented here
-from sklearn.pipeline import Pipeline
+
+class Pipeline:
+
+    def __init__(self, transformations):
+        self._transformations = transformations
+
+    def fit(self, X, Y, verbose=False):
+        """ fit transformations to data and train the model with the output """
+        for name, model in self._transformations[:-1]:
+            if verbose:
+                print(f'fitting transformation {name} (={model})')
+            model.fit(X)
+            X = model.transform(X)
+        if verbose:
+            print(f'fitting estimator {name} (={model})')
+
+        self._transformations[-1][1].fit(X, Y)
+
+    def run_transform(self, data, verbose=False):
+        for name, model in self._transformations[:-1]:
+            if verbose:
+                print(f'transforming with {name} (={model})')
+            print(model)
+            data = model.transform(data)
+        return data
+
+    def predict(self, X, verbose=False):
+        return self._transformations[-1].predict(
+                self.run_transform(X, verbose=verbose))
 
 
 class CrossValidateClassification:
@@ -109,6 +136,7 @@ def confusion_matrix(true, pred):
     for t, p in zip(true, pred):
         rv[t, p] += 1
     return rv
+
 
 def plot_confusion(confusion_matrix, title=None, labels=None, cmap='YlGnBu'):
     ax = sns.heatmap(confusion_matrix, linewidth=0.2, annot=True, cmap=cmap, square=True)
