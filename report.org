@@ -1,0 +1,40 @@
+* Marking Criteria
+** Report - 35.0 pts
+*** Introduction - 5.0 pts
+ - [ ] What is the aim of the study? [2]
+ - [ ] Why is the study important? [3]
+*** Methods - 5.0 pts
+ - [ ] Describe the pre-processing techniques and classifier methods algorithms
+*** Experiments and Results - 15.0 pts
+ - [ ] Comparing experiment results between different algorithms (using table or graph) and produce a meaningful discussion of results from the experiment and choice of classifier methods (analysis on potential reasons for good performance or bad performance, and for training and inference time consumption).
+*** Conclusion - 5.0 pts
+ - [ ] Meaningful conclusion based on results, future work, and improvement suggested.
+*** Presentation - 5.0 pts
+ - [ ] Academic style, proper grammatical sentences, no spelling mistakes [2]
+ - [ ] Good structure and layout, consistent formatting, using charts, graphs and tables to summarise data and compare results [2]
+ - [ ] Appropriate citation and referencing [1].
+** Code - 60.0 pts
+ - [ ] Implementation of PCA [8] and other pre-processing methods [2]
+ - [ ] Implement at least 2 algorithms KNN and Naïve Bayes [10] for each algorithm. [5] for the third algorithm (can be multinominal logistic regression, etc…) [25]
+ - [ ] Fine-tune hyperparameters and comparison (showing how to select hyperparameters, separate training set to validation test and training test for fine-tuning) [15]
+ - [ ] Optimizing source code such as running time[5]
+ - [ ] Coding style: well organized, easily understood with inline comments and proper description of functions [5]
+** Others - 5.0 pts
+ At the discretion of the marker, for impressing the marker, exceeding expectation, etc. Some examples include:
+ - [ ] Fast code: code runs in under 10 mins [2]
+ - [ ] High accuracy: top 10 percentile or above 85% [2]
+ - [ ] Using Latex instead of Word [1]
+** Penalties
+ Code:
+ - [ ] Coding cannot run [-10] for each algorithm
+ - [ ] Plagiarism: Copy source code or snippets of code from the Internet or other sources [-20]. [-20] for copying important code such as the algorithm / classifier. [-5] for copying non-essential code e.g. helper function.
+ Report:
+ - [ ] Plagiarism: Copy report, article, book, journal, research paper or online resources without appropriate referencing and citation [-20]. [-5] per paragraph copied without paraphrasing and proper reference/citation.
+ - [ ] Do not follow file naming rules for submission [-10]
+ - [ ] Do not submit the correct files or correct number of files [-10]
+ - [ ] Report exceeds more than 20 pages, excluding appendix and references [-10]
+ - [ ] Do not include predicted results on test examples [-10]
+ - [ ] Do not include hardware and software spec used for evaluation [-10]
+ - [ ] Do not provide clear and detailed instructions in the report appendix on how to successfully run the code [-10]
+ - [ ] Do not follow assignment instructions other than the ones already listed [-10]. [-3] per instruction not followed e.g. not splitting a subset of the training dataset for validation.
+ - [ ]  Late submission [-5] for each day late
