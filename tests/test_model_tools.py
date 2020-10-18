@@ -1,7 +1,8 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from numpy import testing
 from comp5318_assignment1.models import TrivialModel, KNN, GNB, np_mode, breakup
-from comp5318_assignment1.decomposition import PCA, NMF, IdentityTransformation
+from comp5318_assignment1.decomposition import PCA, NMF, IdentityTransformation, var_covar_matrix
 from comp5318_assignment1.model_tools import Pipeline, ModelRunner
 import pytest
 
@@ -153,13 +154,58 @@ def test_NMF():
     assert nmf.transform(np.random.rand(200, 35)).shape == (200, 5)
 
 
+def test_var_covar_matrix():
+
+    expected = np.array([
+        [1, .2, .7],
+        [.2, 1, 0],
+        [.7, 0, 1],
+    ])
+    # check positive semi-definite
+    assert np.all(np.linalg.eigvals(expected) >= 0)
+    # check symmetric
+    assert np.all(expected == expected.T)
+    data = np.random.multivariate_normal(np.random.rand(expected.shape[0]) * 10, expected, 5000)
+    print('expected value')
+    print(expected)
+    print()
+    print('calculated value')
+    got = var_covar_matrix(data) 
+    print(got)
+    print()
+    print('difference')
+    diff = got - expected
+    print(diff)
+    assert np.all(diff < .05)
+
+    # calculate on other axis
+    got = var_covar_matrix(data.T, axis=1)
+
+
 def test_pca():
-    try:
-        pca = PCA(n_components = 5)
-    except:
-        pca = PCA(components = 5)
+    pca = PCA(components = 5, normalize=False)
     pca.fit(np.random.rand(20, 35))
     assert pca.transform(np.random.rand(200, 35)).shape == (200, 5)
+
+    pca = PCA(components = 2, normalize=False)
+    dat = np.random.multivariate_normal(np.zeros(2), np.array([[1, .9],[.9, 1]]), 3000)
+    pca.fit(dat)
+    plt.scatter(*dat.T)
+    for comp in pca.components.T:
+        plt.annotate('', (0, 0), comp, arrowprops=dict(arrowstyle='->',
+                        linewidth=2,
+                        shrinkA=0, shrinkB=0))
+    plt.title('PCA results on highly correlated normal')
+    if show_results:
+        plt.show()
+    plt.savefig('./tests/_images/pca_test.png')
+    assert pca.components.T[0] @ pca.components.T[1] == 0, 'components are not orthogonal'
+
+    diffs = pca.inverse_transform(pca.transform(dat)) - dat
+    print('average difference on transformation then inverse transformation:',
+          np.mean(diffs, axis=0))
+    assert np.all(diffs < .05), 'transformation is not inversable'
+
 
 def test_pipeline():
     def tuplestr(f):
