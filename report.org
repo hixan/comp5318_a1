@@ -42,3 +42,24 @@
  - [ ] Do not provide clear and detailed instructions in the report appendix on how to successfully run the code [-10]
  - [ ] Do not follow assignment instructions other than the ones already listed [-10]. [-3] per instruction not followed e.g. not splitting a subset of the training dataset for validation.
  - [ ]  Late submission [-5] for each day late
+   
+   
+   
+   
+* Introduction
+  Image data is an extremely abundant source of information in the modern world. It is also difficult to process and extract encoded information. Methods for information extraction from image data could hold a variety of use cases from robotics to security to home automation. Since image data is much higher dimension then traditional datasets, efficient methods for dimensionality reduction and prediction are necessary to achieve the best performance with as little cost in terms of hardware as necessary.
+
+  The aim of this study is to address a few methods for classification of image data, along with a few strategies for handling the high dimensionality of the data as well as selecting hyperparameters of chosen models.
+  
+  Dimensionality Reduction methods include:
+  - Simple feature selection (SFS)
+  - Principle Component Analysis (PCA)
+  - Non-Negative Matrix Factorization (NMF) with sparse representation
+  
+  Prediction algorithms include:
+  - K-Nearest Neighbours (KNN)
+  - Gaussian Naive Bayes (GNB)
+  - Support Vector Machine (SVM) with kernels:
+    - Polynomial
+    - Radial
+    - Sigmoid
