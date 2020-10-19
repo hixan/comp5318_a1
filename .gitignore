@@ -1,3 +1,7 @@
+
+tests/_images/*
+**/__pycache__/
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,emacs,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,emacs,jupyternotebooks
 
