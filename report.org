@@ -13,9 +13,13 @@
  - [ ] Academic style, proper grammatical sentences, no spelling mistakes [2]
  - [ ] Good structure and layout, consistent formatting, using charts, graphs and tables to summarise data and compare results [2]
  - [ ] Appropriate citation and referencing [1].
-** Code - 60.0 pts
- - [ ] Implementation of PCA [8] and other pre-processing methods [2]
- - [ ] Implement at least 2 algorithms KNN and Naïve Bayes [10] for each algorithm. [5] for the third algorithm (can be multinominal logistic regression, etc…) [25]
+** Code - 60.0 pts [1/5]
+ - [X] Implementation of PCA [8]
+ - [ ] and other pre-processing methods [2]
+ - [2/3] Implement KNN and Naïve Bayes and a third algorithm
+   - [X] KNN [10]
+   - [X] NB [10]
+   - [ ] third [5]
  - [ ] Fine-tune hyperparameters and comparison (showing how to select hyperparameters, separate training set to validation test and training test for fine-tuning) [15]
  - [ ] Optimizing source code such as running time[5]
  - [ ] Coding style: well organized, easily understood with inline comments and proper description of functions [5]
@@ -23,7 +27,7 @@
  At the discretion of the marker, for impressing the marker, exceeding expectation, etc. Some examples include:
  - [ ] Fast code: code runs in under 10 mins [2]
  - [ ] High accuracy: top 10 percentile or above 85% [2]
- - [ ] Using Latex instead of Word [1]
+ - [X] Using Latex instead of Word [1]
 ** Penalties
  Code:
  - [ ] Coding cannot run [-10] for each algorithm
