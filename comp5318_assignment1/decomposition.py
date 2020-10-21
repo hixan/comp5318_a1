@@ -79,13 +79,21 @@ class PCA(Transformation):
         # assumes normalized data (mean of 0 over all axes, sd of 1)
         self.k = components
         self.normalize = normalize
+        self._metavalues = dict(
+                variances = None
+                )
 
     def fit(self, X, y=None):
+
+        if self.k is None:
+            self.k = X.shape[1]
+
         cov = var_covar_matrix(X, mean=np.zeros(X.shape[1]))
         val, vec = np.linalg.eigh(cov)  # cov is symmetric, so eigh performs better
 
         # vecs columns are eigenvectors
         pairs = sorted(zip(val, vec.T), key=op.itemgetter(0), reverse=True)
+        self._metavalues['variances'] = np.array(list(map(op.itemgetter(0), pairs)))
         self.components = np.array(list(map(op.itemgetter(1), pairs[:self.k]))).T
         self.inverse_transform_components = (
                 self.components.T @ np.linalg.inv(self.components @ self.components.T))
