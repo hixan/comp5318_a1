@@ -1,8 +1,12 @@
 import random
+import warnings
 import numpy as np
 from typing import List, Tuple
 import h5py
+import operator as op
 import seaborn as sns
+import traceback
+from matplotlib import pyplot as plt
 
 
 class Pipeline:
@@ -26,13 +30,15 @@ class Pipeline:
         for name, model in self._transformations[:-1]:
             if verbose:
                 print(f'transforming with {name} (={model})')
-            print(model)
             data = model.transform(data)
         return data
 
-    def predict(self, X, verbose=False):
-        return self._transformations[-1].predict(
-                self.run_transform(X, verbose=verbose))
+    def predict(self, X, verbose=False, **pred_kwargs):
+        return self._transformations[-1][1].predict(
+                self.run_transform(X, verbose=verbose), **pred_kwargs)
+
+    def __str__(self):
+        return f'Pipeline({", ".join(map(op.itemgetter(0), self._transformations))})'
 
 
 class CrossValidateClassification:
@@ -97,24 +103,22 @@ class CrossValidateClassification:
         return res_true, res_pred
 
     @staticmethod
-    def metrics(true, predicted=None):
+    def metrics(true, predicted=None, names=('accuracy',)):
         """metrics.
 
         :param true:
         :param predicted:
         """
-        # TODO this must be implemented from scratch
-        from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
 
         if predicted is None:  # attempt to unpack
             true, predicted = true
 
-        #cm = confusion_matrix(true, predicted)
-        acc = accuracy_score(true, predicted)
-        #f1 = f1_score(true, predicted)
-        #prec = precision_score(true, predicted)
-        #recall = recall_score(true, predicted)
-        return acc, #prec, recall
+        cm = confusion_matrix(true, predicted)
+        acc = np.mean(true == predicted)
+        res = []
+        if 'accuracy' in names:
+            res.append(np.mean(true == predicted))
+        return acc, cm  # prec, recall
 
     @staticmethod
     def aggregate_metrics(true, predicted):
@@ -131,7 +135,6 @@ class CrossValidateClassification:
 
 
 def confusion_matrix(true, pred):
-    true.T == pred
     rv = np.zeros([len(true)]*2)
     for t, p in zip(true, pred):
         rv[t, p] += 1
@@ -198,10 +201,39 @@ class ModelRunner:
         for model in self.models:
             if verbose:
                 print(f'running {model}')
-            model.fit(self.xtr, self.ytr)
+            try:
+                model.fit(self.xtr, self.ytr)
+            except Exception:
+                tb = traceback.format_exc()
+                warnings.warn(f'{tb}\nmodel {model} exited unexpectedly.'
+                        '\nskipping...')
+                continue  # skip this model
             results[str(model)] = CrossValidateClassification.metrics(
                     self.yte[:n], model.predict(self.xte[:n])
             )
+            if verbose:
+                print(f'{model} got {results[str(model)]}')
         return results
+
+
+def confusion_matrix(true, pred, labels=None):
+    if labels is None:
+        labels = list(set(true))
+    rv = np.zeros([len(labels)]*2)
+    for t, p in zip(true, pred):
+        rv[labels.index(p), labels.index(t)] += 1
+    return rv
+
+
+def plot_confusion_matrix(mat, labels):
+    '''
+    :param mat: confusion matrix
+    :param labels: ordered labels to show on graph
+    '''
+    plt.imshow(mat)
+    plt.xticks(range(len(labels)), labels, rotation='vertical')
+    plt.yticks([-0.5] + list(range(len(labels))) + [len(labels) - .5],
+               [''] + list(labels) + [''],
+               rotation='horizontal')
 
 

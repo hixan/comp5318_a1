@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import testing
-from comp5318_assignment1.models import TrivialModel, KNN, GNB, np_mode, breakup
-from comp5318_assignment1.decomposition import PCA, NMF, IdentityTransformation, var_covar_matrix
+from comp5318_assignment1.models import TrivialModel, KNN, GNB, np_mode, breakup, MultinomialLogisticRegression
+from comp5318_assignment1.decomposition import PCA, NMF, IdentityTransformation, var_covar_matrix, Transformation
 from comp5318_assignment1.model_tools import Pipeline, ModelRunner
 import pytest
 
@@ -75,7 +75,7 @@ def test_GNB():
 
 
 def test_run_data():
-    mr = ModelRunner(KNN(8), GNB())
+    mr = ModelRunner(GNB())
     for m, v in mr.run(n=30).items():
         print(f'{m: >20} : {v[0]}')
     if show_results:
@@ -216,3 +216,61 @@ def test_pipeline():
         tuplestr(TrivialModel(2))
     ])
     plne.fit(np.random.rand(30, 18), np.random.randint(0, 9, 18))
+    plne.predict(np.random.rand(5, 18))
+    print(plne)
+
+
+def test_logreg():
+    X = np.concatenate((
+        np.random.rand(100, 1) + 1,
+        np.random.rand(100, 1) + 2,
+        np.random.rand(100, 1) + 3,
+        np.random.rand(100, 1) + 4,
+        np.random.rand(100, 1) + 5,
+        ), axis=0)
+
+    Y = np.concatenate((
+            np.ones(100, int) * 0,
+            np.ones(100, int) * 1,
+            np.ones(100, int) * 2,
+            np.ones(100, int) * 3,
+            np.ones(100, int) * 4,
+        ), axis=0)
+
+    # already one-hot
+    #Y = np.concatenate((
+    #    np.eye(5)[np.ones(100, int) * 0],
+    #    np.eye(5)[np.ones(100, int) * 1],
+    #    np.eye(5)[np.ones(100, int) * 2],
+    #    np.eye(5)[np.ones(100, int) * 3],
+    #    np.eye(5)[np.ones(100, int) * 4],
+    #), axis=0)
+
+    modeltest(MultinomialLogisticRegression(classes=list(range(5))), X, Y, X, Y)
+
+
+def test_modelrunner_error():
+    m = Pipeline([
+        ('not implemented', Transformation()),
+        ('trivial', TrivialModel(1)),
+    ])
+    with pytest.raises(NotImplementedError):
+        m.fit(None, None)
+    print('running model')
+    ModelRunner(m).run()
+    print('it passed')
+
+def test_KNN_weight():
+    mr = ModelRunner()
+    mr.load_data()
+    xtr, ytr = mr.xtr, mr.ytr
+    xte, yte = mr.xte, mr.yte
+    print('training')
+
+    m = KNN(2, weigh_voting=True)
+    m.fit(xtr, ytr)
+    assert np.mean(m.predict(xte[:30]) == yte[:30]) >= .7
+
+
+
+
